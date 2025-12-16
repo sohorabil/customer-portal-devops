@@ -27,23 +27,24 @@ pipeline {
       }
     }
 
-    stage('Push to DockerHub') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDS}", usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
-          sh '''
-            set -e
-            echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
-            docker push '"${API_IMAGE}:${TAG}"'
-            docker push '"${FE_IMAGE}:${TAG}"'
-          '''
-        }
-      }
+ stage('Push to DockerHub') {
+  steps {
+    withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDS, usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+      sh """
+        set -e
+        echo "\$DH_PASS" | docker login -u "\$DH_USER" --password-stdin
+        docker push ${API_IMAGE}:${TAG}
+        docker push ${FE_IMAGE}:${TAG}
+      """
     }
   }
-
+}
   post {
     always {
       sh "docker logout || true"
     }
   }
 }
+
+
+
