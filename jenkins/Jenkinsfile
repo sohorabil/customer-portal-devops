@@ -1,0 +1,64 @@
+pipeline {
+  agent any
+
+  environment {
+    DOCKERHUB_CREDS = 'dockerhub-creds'
+    API_IMAGE = 'tukrim/customer-portal-api'
+    FE_IMAGE  = 'tukrim/customer-portal-frontend'
+    TAG = "build-${BUILD_NUMBER}"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Build API') {
+      steps { sh "docker build -t ${API_IMAGE}:${TAG} ./api" }
+    }
+
+    stage('Build Frontend') {
+      steps { sh "docker build -t ${FE_IMAGE}:${TAG} ./frontend" }
+    }
+pipeline {
+  agent any
+
+  environment {
+    DOCKERHUB_CREDS = 'dockerhub-creds'
+    API_IMAGE = 'tukrim/customer-portal-api'
+    FE_IMAGE  = 'tukrim/customer-portal-frontend'
+    TAG = "build-${BUILD_NUMBER}"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+
+    stage('Build API') {
+      steps { sh "docker build -t ${API_IMAGE}:${TAG} ./api" }
+    }
+
+    stage('Build Frontend') {
+      steps { sh "docker build -t ${FE_IMAGE}:${TAG} ./frontend" }
+    }
+
+    stage('Push to DockerHub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDS}", usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+          sh '''
+            echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
+            docker push ${API_IMAGE}:${TAG}
+            docker push ${FE_IMAGE}:${TAG}
+          '''
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      sh "docker logout || true"
+    }
+  }
+}
