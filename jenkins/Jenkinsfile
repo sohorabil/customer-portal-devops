@@ -14,7 +14,19 @@ pipeline {
         checkout scm
       }
     }
-
+stage('SonarQube Scan') {
+      steps {
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+          sh """
+            sonar-scanner \
+              -Dsonar.projectKey=customer-portal \
+              -Dsonar.sources=api,frontend \
+              -Dsonar.host.url=http://localhost:9000 \
+              -Dsonar.token=\$SONAR_TOKEN
+          """
+        }
+      }
+    }
     stage('Build API') {
       steps {
         sh "docker build -t ${API_IMAGE}:${TAG} ./api"
@@ -47,3 +59,4 @@ pipeline {
     }
   }
 }
+
