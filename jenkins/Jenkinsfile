@@ -22,7 +22,7 @@ stage('SonarQube Scan') {
               -Dsonar.projectKey=customer-portal \
               -Dsonar.sources=api,frontend \
               -Dsonar.host.url=http://localhost:9000 \
-              -Dsonar.token=\$SONAR_TOKEN
+              -Dsonar.login=\$SONAR_TOKEN
           """
         }
       }
